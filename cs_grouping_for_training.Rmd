@@ -23,6 +23,10 @@ library(reshape2)
 # Read in and combine the two .csv files containing the by-event damage data
 csgo_data <- rbind(read.csv("esea_master_dmg_demos.part1.csv"), 
              read.csv("esea_master_dmg_demos.part2.csv"))
+
+# Read in the win data for the matches
+csgo_win_data <- rbind(read.csv("esea_meta_demos.part1.csv"), read.csv("esea_meta_demos.part2.csv")) 
+
 ```
 
 Finds the column names and how the games are grouped in the dataset.
@@ -58,5 +62,23 @@ player_round_map <- csgo_data %>%
                            Terrorist3,
                            Terrorist4,
                            Terrorist5)
+```
+
+
+Creates a table which documents the damage taken by each player for each round of each match
+```{r}
+tagged_dmg_data <- csgo_data %>%
+                   left_join(player_round_map, by=c('file','round')) %>% #combines the new table with full table data by round=file
+                   rowwise() %>%
+                   mutate(CounterTerrorist1Dmg = if(vic_id %in% CounterTerrorist1) -hp_dmg else 0, #Sorts into each column who the dmg is taken by
+                           CounterTerrorist2Dmg = if(vic_id %in% CounterTerrorist2) -hp_dmg else 0,
+                           CounterTerrorist3Dmg = if(vic_id %in% CounterTerrorist3) -hp_dmg else 0,
+                           CounterTerrorist4Dmg = if(vic_id %in% CounterTerrorist4) -hp_dmg else 0,
+                           CounterTerrorist5Dmg = if(vic_id %in% CounterTerrorist5) -hp_dmg else 0,
+                           Terrorist1Dmg = if(vic_id %in% Terrorist1) -hp_dmg else 0,
+                           Terrorist2Dmg = if(vic_id %in% Terrorist2) -hp_dmg else 0,
+                           Terrorist3Dmg = if(vic_id %in% Terrorist3) -hp_dmg else 0,
+                           Terrorist4Dmg = if(vic_id %in% Terrorist4) -hp_dmg else 0,
+                           Terrorist5Dmg = if(vic_id %in% Terrorist5) -hp_dmg else 0)
 ```
 
