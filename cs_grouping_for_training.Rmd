@@ -157,7 +157,7 @@ training_data_to_write <- tagged_dmg_data %>%
 Makes the csv.
 ```{r}
 #Write data in format for training to .csv
-write.csv(training_data_to_write, "ML_Data_To_Subset")
+write.csv(training_data_to_write, "C:/Users/liana/BZAN542project/all_game_state_data.csv")
 ```
 
 
