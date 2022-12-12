@@ -101,5 +101,18 @@ tagged_dmg_data <- tagged_dmg_data %>%
 ```
 
 
+Creates a table that has all the win and loss data and game duration.
+```{r}                                                                    
+win_data <- csgo_win_data%>%
+        mutate(duration=end_seconds - start_seconds) %>% #calculates the duration of each game
+        select(-start_seconds, -end_seconds) #deletes the extra columns
+```
 
+
+Combines damange table,win-loss data, and game lengths for each match.
+```{r}
+#Combines damage data with win loss data for each match and game lengths
+tagged_dmg_data <- tagged_dmg_data %>%
+                   left_join(win_data, on=c(file, round))
+```
 
