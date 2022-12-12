@@ -1,0 +1,164 @@
+---
+title: "BZAN 542-CSGO"
+author: "Group 8"
+date: "2022-12-12"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Loads in the data and packages needed.
+```{r}
+#Change the working directory to your own.
+setwd("C:/Users/liana/Downloads/archive")
+
+#Loads in the required packages
+library(tidyverse)
+library(dplyr)
+library(reshape2)
+
+# Read in and combine the two .csv files containing the by-event damage data
+csgo_data <- rbind(read.csv("esea_master_dmg_demos.part1.csv"), 
+             read.csv("esea_master_dmg_demos.part2.csv"))
+
+# Read in the win data for the matches
+csgo_win_data <- rbind(read.csv("esea_meta_demos.part1.csv"), read.csv("esea_meta_demos.part2.csv")) 
+
+```
+
+Finds the column names and how the games are grouped in the dataset.
+```{r}
+
+colnames(csgo_data)
+
+files_names <- unique(csgo_data$file) #each file is a separate ESEA match with all of its associated data
+```
+
+
+
+Creates unique identities for each player in each match that stays through each round so we can document hp.
+```{r}
+player_round_map <- csgo_data %>%
+                    select(file, round, vic_side, vic_id) %>%
+                    distinct() %>% #eliminates repeats of the exact same row where rows are identical
+                    group_by(file, round, vic_side) %>% #groups by the match, round, then victim side that was shot
+                    mutate(pnumber = row_number()) %>% #makes a column called pnumber which is th row number
+                    mutate(player_id = paste0(vic_side, pnumber)) %>% #combines the two string names together to make the names for the players
+                    ungroup() %>% #ungroups items to delete stuff
+                    select(-pnumber, -vic_side) %>% #deletes pnumber and vic_side columns because we have player_id now
+                    spread(player_id, vic_id) %>% 
+                    select(file,
+                           round,
+                           CounterTerrorist1,
+                           CounterTerrorist2,
+                           CounterTerrorist3,
+                           CounterTerrorist4,
+                           CounterTerrorist5,
+                           Terrorist1,
+                           Terrorist2,
+                           Terrorist3,
+                           Terrorist4,
+                           Terrorist5)
+```
+
+
+Creates a table which documents the damage taken by each player for each round of each match
+```{r}
+tagged_dmg_data <- csgo_data %>%
+                   left_join(player_round_map, by=c('file','round')) %>% #combines the new table with full table data by round=file
+                   rowwise() %>%
+                   mutate(CounterTerrorist1Dmg = if(vic_id %in% CounterTerrorist1) -hp_dmg else 0, #Sorts into each column who the dmg is taken by
+                           CounterTerrorist2Dmg = if(vic_id %in% CounterTerrorist2) -hp_dmg else 0,
+                           CounterTerrorist3Dmg = if(vic_id %in% CounterTerrorist3) -hp_dmg else 0,
+                           CounterTerrorist4Dmg = if(vic_id %in% CounterTerrorist4) -hp_dmg else 0,
+                           CounterTerrorist5Dmg = if(vic_id %in% CounterTerrorist5) -hp_dmg else 0,
+                           Terrorist1Dmg = if(vic_id %in% Terrorist1) -hp_dmg else 0,
+                           Terrorist2Dmg = if(vic_id %in% Terrorist2) -hp_dmg else 0,
+                           Terrorist3Dmg = if(vic_id %in% Terrorist3) -hp_dmg else 0,
+                           Terrorist4Dmg = if(vic_id %in% Terrorist4) -hp_dmg else 0,
+                           Terrorist5Dmg = if(vic_id %in% Terrorist5) -hp_dmg else 0)
+```
+
+
+Makes the damage table be in order of time so players take damage in time order.
+```{r}
+tagged_dmg_data <- tagged_dmg_data %>% 
+                   group_by(file, round) %>% 
+                   arrange(tick) %>% #in time order to make sure that the damage is being taken in time order
+                   mutate(CT1_health = 100+cumsum(CounterTerrorist1Dmg), #makes it so each combination of each file/match and round
+                          CT2_health = 100+cumsum(CounterTerrorist2Dmg), #the 100 is the base health
+                          CT3_health = 100+cumsum(CounterTerrorist3Dmg),
+                          CT4_health = 100+cumsum(CounterTerrorist4Dmg),
+                          CT5_health = 100+cumsum(CounterTerrorist5Dmg),
+                          T1_health = 100+cumsum(Terrorist1Dmg),
+                          T2_health = 100+cumsum(Terrorist2Dmg),
+                          T3_health = 100+cumsum(Terrorist3Dmg),
+                          T4_health = 100+cumsum(Terrorist4Dmg),
+                          T5_health = 100+cumsum(Terrorist5Dmg))
+```
+
+
+Creates a table that has all the win and loss data and game duration.
+```{r}                                                                    
+win_data <- csgo_win_data%>%
+        mutate(duration=end_seconds - start_seconds) %>% #calculates the duration of each game
+        select(-start_seconds, -end_seconds) #deletes the extra columns
+```
+
+
+Combines damange table,win-loss data, and game lengths for each match.
+```{r}
+#Combines damage data with win loss data for each match and game lengths
+tagged_dmg_data <- tagged_dmg_data %>%
+                   left_join(win_data, on=c(file, round))
+```
+
+
+Cleans up table.
+```{r}
+training_data_to_write <- tagged_dmg_data %>%
+                          select(-Terrorist1, #Cleans up table for machine learning
+                                 -Terrorist2,
+                                 -Terrorist3,
+                                 -Terrorist4,
+                                 -Terrorist5,
+                                 -CounterTerrorist1,
+                                 -CounterTerrorist2,
+                                 -CounterTerrorist3,
+                                 -CounterTerrorist4,
+                                 -CounterTerrorist5,
+                                 -Terrorist1Dmg,
+                                 -Terrorist2Dmg,
+                                 -Terrorist3Dmg,
+                                 -Terrorist4Dmg,
+                                 -Terrorist5Dmg,
+                                 -CounterTerrorist1Dmg,
+                                 -CounterTerrorist2Dmg,
+                                 -CounterTerrorist3Dmg,
+                                 -CounterTerrorist4Dmg,
+                                 -CounterTerrorist5Dmg,
+                                 -hitbox,
+                                 -att_id,
+                                 -vic_id,
+                                 -att_rank,
+                                 -vic_rank,
+                                 -hp_dmg,
+                                 -arm_dmg,
+                                 -wp,
+                                 -wp_type)
+
+
+
+```
+
+Makes the csv.
+```{r}
+#Write data in format for training to .csv
+write.csv(training_data_to_write, "ML_Data_To_Subset")
+```
+
+
+
