@@ -1,0 +1,80 @@
+---
+title: "BZAN 542-CSGO"
+author: "Group 8"
+date: "2022-12-12"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Loads in the data and packages needed.
+```{r}
+#Change the working directory to your own.
+setwd("C:/Users/liana/Downloads/archive")
+
+#Loads in the required packages
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(ggpmisc)
+library(timeDate)
+
+# Read in and combine the two .csv files containing the by-event damage data
+csgo_data <- rbind(read.csv("esea_master_dmg_demos.part1.csv"), 
+             read.csv("esea_master_dmg_demos.part2.csv"))
+```
+
+Finds the column names and how the games are grouped in the dataset.
+```{r}
+
+colnames(csgo_data)
+
+files_names <- unique(csgo_data$file) #each file is a separate ESEA match with all of its associated data
+```
+
+
+
+Group the data by match and player in match.
+```{r}
+
+
+csgo_match_player <- csgo_data %>%
+                    group_by(file) %>% #groups based on ESEA match
+                    summarize(p1=unique(vic_id)[1], #summarizes dmg for each players data for each match based on vic_ids.
+                    p2=unique(vic_id)[2],
+                    p3=unique(vic_id)[3], 
+                    p4=unique(vic_id)[4],
+                    p5=unique(vic_id)[5],
+                    p6=unique(vic_id)[6],
+                    p7=unique(vic_id)[7],
+                    p8=unique(vic_id)[8],
+                    p9=unique(vic_id)[9],
+                    p10=unique(vic_id)[10], #Games usually have 10 players but if someone leaves, each team can call in substitutes.
+                    p11=if(is.na(unique(vic_id)[11])==0) unique(vic_id)[11] else NA, #Sometimes there is not an 11th player
+                    p12=if(is.na(unique(vic_id)[12])==0) unique(vic_id)[12] else NA) #Sometimes there is not a 12th player
+```
+
+
+Calculates for player health to account for game state at a given moment.
+```{r}
+
+# Adds a column to account for player health at the time.
+game_state <- csgo_data %>% add_column(p1_health = NA, 
+                                 p2_health= NA,
+                                 p3_health= NA,
+                                 p4_health= NA,
+                                 p5_health= NA,
+                                 p6_health= NA,
+                                 p7_health= NA,
+                                 p8_health= NA,
+                                 p9_health= NA,
+                                 p10_health= NA,
+                                 p11_health= NA,
+                                 p12_health= NA
+                                 )
+
+```
+
