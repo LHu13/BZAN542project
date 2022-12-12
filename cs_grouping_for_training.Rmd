@@ -18,9 +18,7 @@ setwd("C:/Users/liana/Downloads/archive")
 #Loads in the required packages
 library(tidyverse)
 library(dplyr)
-library(ggplot2)
-library(ggpmisc)
-library(timeDate)
+library(reshape2)
 
 # Read in and combine the two .csv files containing the by-event damage data
 csgo_data <- rbind(read.csv("esea_master_dmg_demos.part1.csv"), 
@@ -37,44 +35,28 @@ files_names <- unique(csgo_data$file) #each file is a separate ESEA match with a
 
 
 
-Group the data by match and player in match.
+Creates unique identities for each player in each match that stays through each round so we can document hp.
 ```{r}
-
-
-csgo_match_player <- csgo_data %>%
-                    group_by(file) %>% #groups based on ESEA match
-                    summarize(p1=unique(vic_id)[1], #summarizes dmg for each players data for each match based on vic_ids.
-                    p2=unique(vic_id)[2],
-                    p3=unique(vic_id)[3], 
-                    p4=unique(vic_id)[4],
-                    p5=unique(vic_id)[5],
-                    p6=unique(vic_id)[6],
-                    p7=unique(vic_id)[7],
-                    p8=unique(vic_id)[8],
-                    p9=unique(vic_id)[9],
-                    p10=unique(vic_id)[10], #Games usually have 10 players but if someone leaves, each team can call in substitutes.
-                    p11=if(is.na(unique(vic_id)[11])==0) unique(vic_id)[11] else NA, #Sometimes there is not an 11th player
-                    p12=if(is.na(unique(vic_id)[12])==0) unique(vic_id)[12] else NA) #Sometimes there is not a 12th player
-```
-
-
-Calculates for player health to account for game state at a given moment.
-```{r}
-
-# Adds a column to account for player health at the time.
-game_state <- csgo_data %>% add_column(p1_health = NA, 
-                                 p2_health= NA,
-                                 p3_health= NA,
-                                 p4_health= NA,
-                                 p5_health= NA,
-                                 p6_health= NA,
-                                 p7_health= NA,
-                                 p8_health= NA,
-                                 p9_health= NA,
-                                 p10_health= NA,
-                                 p11_health= NA,
-                                 p12_health= NA
-                                 )
-
+player_round_map <- csgo_data %>%
+                    select(file, round, vic_side, vic_id) %>%
+                    distinct() %>% #eliminates repeats of the exact same row where rows are identical
+                    group_by(file, round, vic_side) %>% #groups by the match, round, then victim side that was shot
+                    mutate(pnumber = row_number()) %>% #makes a column called pnumber which is th row number
+                    mutate(player_id = paste0(vic_side, pnumber)) %>% #combines the two string names together to make the names for the players
+                    ungroup() %>% #ungroups items to delete stuff
+                    select(-pnumber, -vic_side) %>% #deletes pnumber and vic_side columns because we have player_id now
+                    spread(player_id, vic_id) %>% 
+                    select(file,
+                           round,
+                           CounterTerrorist1,
+                           CounterTerrorist2,
+                           CounterTerrorist3,
+                           CounterTerrorist4,
+                           CounterTerrorist5,
+                           Terrorist1,
+                           Terrorist2,
+                           Terrorist3,
+                           Terrorist4,
+                           Terrorist5)
 ```
 
