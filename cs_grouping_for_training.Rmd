@@ -82,3 +82,24 @@ tagged_dmg_data <- csgo_data %>%
                            Terrorist5Dmg = if(vic_id %in% Terrorist5) -hp_dmg else 0)
 ```
 
+
+Makes the damage table be in order of time so players take damage in time order.
+```{r}
+tagged_dmg_data <- tagged_dmg_data %>% 
+                   group_by(file, round) %>% 
+                   arrange(tick) %>% #in time order to make sure that the damage is being taken in time order
+                   mutate(CT1_health = 100+cumsum(CounterTerrorist1Dmg), #makes it so each combination of each file/match and round
+                          CT2_health = 100+cumsum(CounterTerrorist2Dmg), #the 100 is the base health
+                          CT3_health = 100+cumsum(CounterTerrorist3Dmg),
+                          CT4_health = 100+cumsum(CounterTerrorist4Dmg),
+                          CT5_health = 100+cumsum(CounterTerrorist5Dmg),
+                          T1_health = 100+cumsum(Terrorist1Dmg),
+                          T2_health = 100+cumsum(Terrorist2Dmg),
+                          T3_health = 100+cumsum(Terrorist3Dmg),
+                          T4_health = 100+cumsum(Terrorist4Dmg),
+                          T5_health = 100+cumsum(Terrorist5Dmg))
+```
+
+
+
+
