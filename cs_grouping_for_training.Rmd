@@ -116,3 +116,49 @@ tagged_dmg_data <- tagged_dmg_data %>%
                    left_join(win_data, on=c(file, round))
 ```
 
+
+Cleans up table.
+```{r}
+training_data_to_write <- tagged_dmg_data %>%
+                          select(-Terrorist1, #Cleans up table for machine learning
+                                 -Terrorist2,
+                                 -Terrorist3,
+                                 -Terrorist4,
+                                 -Terrorist5,
+                                 -CounterTerrorist1,
+                                 -CounterTerrorist2,
+                                 -CounterTerrorist3,
+                                 -CounterTerrorist4,
+                                 -CounterTerrorist5,
+                                 -Terrorist1Dmg,
+                                 -Terrorist2Dmg,
+                                 -Terrorist3Dmg,
+                                 -Terrorist4Dmg,
+                                 -Terrorist5Dmg,
+                                 -CounterTerrorist1Dmg,
+                                 -CounterTerrorist2Dmg,
+                                 -CounterTerrorist3Dmg,
+                                 -CounterTerrorist4Dmg,
+                                 -CounterTerrorist5Dmg,
+                                 -hitbox,
+                                 -att_id,
+                                 -vic_id,
+                                 -att_rank,
+                                 -vic_rank,
+                                 -hp_dmg,
+                                 -arm_dmg,
+                                 -wp,
+                                 -wp_type)
+
+
+
+```
+
+Makes the csv.
+```{r}
+#Write data in format for training to .csv
+write.csv(training_data_to_write, "ML_Data_To_Subset")
+```
+
+
+
