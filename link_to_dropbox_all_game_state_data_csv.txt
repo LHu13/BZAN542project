@@ -1,1 +1,1 @@
-https://www.dropbox.com/s/vw3u6o41c3ncfmj/all_game_state_data.csv?dl=0
+https://www.dropbox.com/s/6dwk1x5ahqy810b/all_game_state_data_bool.csv?dl=0
