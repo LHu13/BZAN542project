@@ -23,10 +23,16 @@ csgo_processed = csgo_processed %>%
   mutate_if(is.character, function(x) {as.factor(x)}) #converts char variables into factors 
 
 
+###dropping nas
+csgo_processed = csgo_processed[complete.cases(csgo_processed),]
+
+
+
+
 ####create training and testing data
 set.seed(0)
 
-#use function from 
+#partition data
 tr.set = createDataPartition(y=csgo_processed$T_win, p = .75, list = F)
 
 
