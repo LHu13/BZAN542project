@@ -148,24 +148,30 @@ training_data_to_write <- tagged_dmg_data %>%
                                  -hp_dmg,
                                  -arm_dmg,
                                  -wp,
-                                 -wp_type)
+                                 -wp_type) %>%
+                            mutate(T1_dead = if_else(T1_health == 0, 1, 0), #shows when team members are dead of each team as binary
+                                   T2_dead = if_else(T2_health == 0, 1, 0),
+                                   T3_dead = if_else(T3_health == 0, 1, 0),
+                                   T4_dead = if_else(T4_health == 0, 1, 0),
+                                   T5_dead = if_else(T5_health == 0, 1, 0),
+                                   CT1_dead = if_else(CT1_health == 0, 1, 0),
+                                   CT2_dead = if_else(CT2_health == 0, 1, 0),
+                                   CT3_dead = if_else(CT3_health == 0, 1, 0),
+                                   CT4_dead = if_else(CT4_health == 0, 1, 0), 
+                                   CT5_dead = if_else(CT5_health == 0, 1, 0)) %>%
+                            mutate(T_dead = T1_dead +  T2_dead + T3_dead + T4_dead + T5_dead,
+                                   CT_dead = CT1_dead + CT2_dead + CT3_dead + CT4_dead + CT5_dead) %>%  #shows when whole team is dead
+                            mutate(T_win = if_else(winner_side == "Terrorist", 1, 0)) %>% #makes win binary
+                            drop_na(T_win)
 
 
 
 ```
-
-Adds a column to make the win-loss binary.
-```{r}
-training_data_to_write <- training_data_to_write %>%
-                          mutate(vic_won=(vic_team == winner_team))
-```
-
-
 
 Makes the csv.
 ```{r}
 #Write data in format for training to .csv
-write.csv(training_data_to_write, "C:/Users/liana/BZAN542project/all_game_state_data_bool.csv")
+write.csv(training_data_to_write, "C:/Users/liana/BZAN542project/all_game_state_data_train.csv")
 ```
 
 
