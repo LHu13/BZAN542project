@@ -1,5 +1,6 @@
 #%%
 
+## GENERAL PREP-WORK ##
 #Loads in all the necessary packages
 import numpy as np
 import pandas as pd
@@ -18,6 +19,8 @@ dataframe = pd.DataFrame(pd.read_csv("C:\Users\liana\OneDrive\Desktop\all_game_s
 
 
 #%%
+## DATA PRE-PROCESSING ##
+
 #Sometimes bomb_sites are not planted therefore it is now bomb site a, b, or none.
 dataframe['bomb_site'] = dataframe['bomb_site'].fillna('none')
 print(dataframe.isnull().sum())
@@ -35,45 +38,48 @@ dataframe_subset = dataframe[['seconds', 'is_bomb_planted', 'bomb_site', 'CT1_he
 
 #Change the the bomb_site, map, and round_type variables as integers.
 dataframe_subset[['bomb_site', 'map', 'round_type']] = dataframe_subset[['bomb_site', 'map', 'round_type']].apply(LabelEncoder().fit_transform)
-csgo_data = dataframe_subset.values
+csgo_data = dataframe_subset.values #takes off the headers so it is just values
 #%%
 
 #Set the input and output variables
-X = np.float32(csgo_data) #needs to be float32 format
-Y = dataframe[['T_win']].values #win condition 
-encoder = LabelEncoder()
-encoder.fit(Y)
+X = np.float32(csgo_data) #input variables need to be float32 format 
+Y = dataframe[['T_win']].values #output/outcome variable
+
+#Encodes the output data to be readable to the model
+encoder = LabelEncoder() 
+encoder.fit(Y) 
 Y = encoder.transform(Y)
+
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25) #splits the data into training and testing data subsets
-# X = csgo_data[:,[5, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]]
-# print(X['seconds'])
+
 
 #%%
-# First layer has to match number of inputs
-model = tf.keras.models.Sequential([
+## MODEL CREATION AND TRAINING###
+
+# Creates the actual model
+model = tf.keras.models.Sequential([ #chooses model layout
     tf.keras.layers.Normalization(axis=None), #normalize the data and convert to z-score
     tf.keras.layers.Dense(29, input_shape=(29,), activation='relu'), #29 nodes for input
     tf.keras.layers.Dense(87, activation='tanh'), #calculates for interactions between variables
     tf.keras.layers.Dense(1, activation='sigmoid') #outputs 1 as probability of Terrorists winning
 ])
 
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']) 
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']) #sets loss and optimizer for model
 print(Y)
 #%%
 model.fit(X_train, Y_train, batch_size=128, epochs=50) #fits the model, number of samples, and number of times to train
 
 #%%
+## MODEL EVALUATING ##
+
 #See how the model performs on test data
-model.evaluate(X_test, Y_test, verbose=2)
+model.evaluate(X_test, Y_test, verbose=2) #conducts the model on the test subset
 #%%
-y_pred = model.predict(X_test)
+y_pred = model.predict(X_test) #conducts the model on the test subset and finds number of prediction later
 #%%
-
-#Save model to avoid re-training to get to the current point
-model.save('first_training_50_epoch')
+model.save('first_training_50_epoch') #saves model so we do not have to retrain
 #%%
-
-matrix = sklearn.metrics.confusion_matrix(Y_test, np.rint(y_pred).astype(int)) #Creates confusion matrix
+matrix = sklearn.metrics.confusion_matrix(Y_test, np.rint(y_pred).astype(int)) #creates confusion matrix
 #%%
-print(matrix/len(y_pred)) #Calculates confusion matrix as proportion
+print(matrix/len(y_pred)) #calculates confusion matrix as proportion
 #%%
