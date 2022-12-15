@@ -1,6 +1,7 @@
 #%%
 
 ## GENERAL PREP-WORK ##
+#You will need the csv with all the data as well as ipykernel to run by cells
 #Loads in all the necessary packages
 import numpy as np
 import pandas as pd
