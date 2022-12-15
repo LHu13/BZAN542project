@@ -15,7 +15,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
-#change to whereever your csv is stored.
+# Change to whereever your csv is stored. 
+# The csv can be downloaded from the DropBox link in the text file on the GitHub titled: link_to_dropbox_all_game_state_data_csv.txt
 print('Started loading data')
 dataframe = pd.DataFrame(pd.read_csv("C:\\Users\\liana\\OneDrive\\Desktop\\all_game_state_data_train.csv"))
 print('Finished loading data')
@@ -37,11 +38,11 @@ dataframe_subset = dataframe[['seconds', 'is_bomb_planted', 'bomb_site', 'CT1_he
                               'round_type', 'ct_eq_val', 't_eq_val', 'T1_dead', 'T2_dead', 'T3_dead', 'T4_dead', 'T5_dead',
                               'CT1_dead', 'CT2_dead', 'CT3_dead', 'CT4_dead', 'CT5_dead', 'T_dead', 'CT_dead']]
 print('Finished subsetting data')
+
 #Change the the bomb_site, map, and round_type variables as integers.
 dataframe_subset[['bomb_site', 'map', 'round_type']] = dataframe_subset[['bomb_site', 'map', 'round_type']].apply(LabelEncoder().fit_transform)
 csgo_data = dataframe_subset.values #takes off the headers so it is just values
 #%%
-
 #Set the input and output variables
 X = np.float32(csgo_data) #input variables need to be float32 format 
 Y = dataframe[['T_win']].values #output/outcome variable
@@ -53,6 +54,7 @@ Y = encoder.transform(Y)
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25) #splits the data into training and testing data subsets
 print('Finished splitting data')
+
 
 #%%
 ## MODEL CREATION AND TRAINING###
@@ -72,6 +74,7 @@ print(Y)
 model.fit(X_train, Y_train, batch_size=128, epochs=50) #fits the model, number of samples, and number of times to train
 
 #%%
+
 ## MODEL EVALUATING ##
 
 #See how the model performs on test data
