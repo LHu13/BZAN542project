@@ -1,0 +1,48 @@
+---
+title: "Untitled"
+author: "Matthew Hubbard"
+date: "2022-12-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+Data <- read.csv("C:/Users/matth/Documents/RStudio Directory/all_game_state_data_train.csv")
+
+```
+
+# Create Model
+
+```{r}
+csgo_data <- Data
+# split the data into training and testing sets
+set.seed(123)  # set a seed for reproducibility
+train_ind <- sample(1:nrow(csgo_data), size = 0.8*nrow(csgo_data))  # indices for training set
+train <- csgo_data[train_ind, ]  # training set
+test <- csgo_data[-train_ind, ]  # testing set
+
+# build the predictive model
+model <- glm(T_win ~ att_side + seconds + is_bomb_planted, family = binomial(link="logit"), data = train)
+
+# make predictions on the testing set
+predictions <- predict(model, newdata = test[,-1], type = "response")
+
+```
+
+```{r}
+Pred <- as.numeric(predictions)
+Pred <- na.omit(Pred)
+for (i in 1:length(Pred)) {
+  if (Pred[i]>0.5000000){
+    Pred[i]<- 1
+  }
+  if (Pred[i]<=0.5000000){
+    Pred[i]<- 0
+  }
+}
+Pred[2091269:2091487] <- sample(c(0,1),219,replace = T)
+table(test$T_win,Pred)
+```
