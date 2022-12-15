@@ -1,5 +1,5 @@
 # BZAN542project
-##R Environment Requirements
+## R Environment Requirements
 The sections of our code that were written require the following packages: 
 -tidyverse
 -dplyr
@@ -9,7 +9,7 @@ The sections of our code that were written require the following packages:
 -caret
 
 
-##Python Environment Requirements
+## Python Environment Requirements
 The sections of our code that were written in python were written in python 3. Our code uses the following packages:
 -numpy
 -pandas
