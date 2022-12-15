@@ -13,7 +13,8 @@ from sklearn.pipeline import Pipeline
 
 ## LOADING IN TRAINED MODEL ##
 print('Loading trained model')
-trained_model = keras.models.load_model("C:\\Users\\liana\\OneDrive\\Desktop\\CSGO_ML_first_training_50_epoch")
+#Change location to whereever you have your model stored.
+trained_model = keras.models.load_model("C:\\Users\\liana\\BZAN542project\\CSGO_ML_first_training_50_epochs")
 print('Trained model loaded')
 
 
